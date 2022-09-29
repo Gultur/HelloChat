@@ -68,10 +68,12 @@ class Chat extends HTMLElement
         sendBox.classList.add('input-message')
 
         const input = document.createElement('textarea')
-        input.placeholder = 'WriteMessage'
+        input.placeholder = 'Ecrivez votre message'
+        input.addEventListener('keyup', this.handleInputEvent);
 
         const button = document.createElement('button')
         button.innerText = 'OK'
+        button.setAttribute('disabled', true)
         button.onclick = this.handleSendMessage(input, user)
 
         sendBox.appendChild(input)
@@ -90,20 +92,40 @@ class Chat extends HTMLElement
 
                 messageBoxes.forEach((messageBox) => {
 
-                    const span = document.createElement('p')
                     const pre = document.createElement('pre')
-                    pre.innerHTML = message.content
-
+                    pre.textContent = message.content
 
                     const messageBoxUser = messageBox.getAttribute('user')
-                    span.classList.add(messageBoxUser === message.user?.name? 'self' : 'other', 'message')
 
-                    span.appendChild(pre)
-                    messageBox.appendChild(span);
+                    const isSender = messageBoxUser === message.user?.name
+                    pre.classList.add( isSender === true ? 'self' : 'other', 'message')
+
+                    messageBox.appendChild(pre);
                     messageBox.scrollTop = messageBox. scrollHeight
-                    input.value = ""
+
+                    // we need to reset the textarea value
+                    input.value = ''
+                    input.dispatchEvent(new Event('keyup'))
                 })
             }
+        }
+    }
+
+    handleInputEvent(event)
+    {
+        const target = event.target
+
+        const relatedButton = target?.nextSibling // we know that the button is the next sibling element, we should 
+        const buttonIsDisabled = relatedButton?.getAttribute('disabled');
+
+        if(target?.value !== '' && buttonIsDisabled)
+        {
+            relatedButton.removeAttribute('disabled')
+        }
+
+        if(target?.value === '' && !buttonIsDisabled)
+        {
+            relatedButton.setAttribute('disabled', true)
         }
     }
 }
